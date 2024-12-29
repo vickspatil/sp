@@ -6,17 +6,117 @@
   <title>Real-Time Cooley-Tukey FFT Simulation</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
       text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-top: 20px;
+      color: #b3b3b3;
+      font-weight: 600;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      color: #a8a8a8;
+    }
+
+    .controls {
+      margin: 30px auto;
+      padding: 20px;
+      max-width: 700px;
+      background: #1a1a1a;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    label {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #c2c2c2;
+    }
+
+    input[type="range"] {
+      width: 80%;
+      margin: 10px auto;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #444;
+      height: 6px;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #999;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: #7d7d7d;
+    }
+
+    span {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #d0d0d0;
+    }
+
+    .graphs-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      padding: 40px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    canvas {
+      flex: 1;
+      min-width: 500px;
+      max-width: 700px;
+      height: 500px;
+      background: #1e1e1e;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
       padding: 20px;
     }
-    canvas {
-      max-width: 700px;
-      margin: 20px auto;
-    }
-    .controls {
-      margin: 20px;
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+
+      canvas {
+        min-width: 300px;
+        height: 400px;
+        padding: 10px;
+      }
+      
+      .graphs-container {
+        padding: 20px;
+        gap: 20px;
+      }
     }
   </style>
 </head>
@@ -34,7 +134,7 @@
     <span id="frequencyValue">1</span>
   </div>
 
-  <div>
+  <div class="graphs-container">
     <canvas id="inputSignalChart"></canvas>
     <canvas id="fftOutputChart"></canvas>
   </div>
@@ -113,6 +213,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: true,
@@ -134,6 +235,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: true,
