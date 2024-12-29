@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Cooley-Tukey FFT Simulation</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    canvas {
+      max-width: 700px;
+      margin: 20px auto;
+    }
+    .controls {
+      margin: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Cooley-Tukey FFT Simulation</h1>
+  <p>Adjust the signal parameters to observe changes in the frequency domain.</p>
+
+  <div class="controls">
+    <label for="amplitude">Amplitude:</label>
+    <input id="amplitude" type="range" min="0" max="200" step="0.1" value="1">
+    <span id="amplitudeValue">1.0</span>
+    <br><br>
+    <label for="frequency">Frequency:</label>
+    <input id="frequency" type="range" min="1" max="100" step="1" value="1">
+    <span id="frequencyValue">1</span>
+  </div>
+
+  <div>
+    <canvas id="inputSignalChart"></canvas>
+    <canvas id="fftOutputChart"></canvas>
+  </div>
+
+  <script>
+    const N = 64; // Number of samples (power of 2 for FFT)
+    const sampleRate = 64; // Sampling rate
+    let amplitude = 1;
+    let frequency = 1;
+
+    // Generate a sinusoidal input signal
+    function generateSignal() {
+      return Array.from({ length: N }, (_, i) =>
+        amplitude * Math.sin(2 * Math.PI * frequency * i / sampleRate)
+      );
+    }
+
+    // Function to perform FFT using Cooley-Tukey algorithm
+    function fft(input) {
+      const n = input.length;
+      if (n <= 1) return input.map(x => ({ real: x, imag: 0 }));
+
+      // Split input into even and odd parts
+      const even = fft(input.filter((_, i) => i % 2 === 0));
+      const odd = fft(input.filter((_, i) => i % 2 !== 0));
+
+      // Combine results
+      const result = new Array(n);
+      for (let k = 0; k < n / 2; k++) {
+        const exp = { 
+          real: Math.cos(-2 * Math.PI * k / n), 
+          imag: Math.sin(-2 * Math.PI * k / n) 
+        };
+        const t = {
+          real: exp.real * odd[k].real - exp.imag * odd[k].imag,
+          imag: exp.real * odd[k].imag + exp.imag * odd[k].real,
+        };
+        result[k] = { 
+          real: even[k].real + t.real, 
+          imag: even[k].imag + t.imag 
+        };
+        result[k + n / 2] = { 
+          real: even[k].real - t.real, 
+          imag: even[k].imag - t.imag 
+        };
+      }
+      return result;
+    }
+
+    // Update the charts
+    function updateCharts() {
+      const inputSignal = generateSignal();
+      const fftResult = fft(inputSignal);
+      const magnitude = fftResult.map(c => Math.sqrt(c.real ** 2 + c.imag ** 2));
+
+      // Update Input Signal Chart
+      inputSignalChart.data.datasets[0].data = inputSignal;
+      inputSignalChart.update();
+
+      // Update FFT Output Chart
+      fftOutputChart.data.datasets[0].data = magnitude;
+      fftOutputChart.update();
+    }
+
+    // Create Input Signal Chart
+    const inputSignalChart = new Chart(document.getElementById("inputSignalChart"), {
+      type: "line",
+      data: {
+        labels: Array.from({ length: N }, (_, i) => i),
+        datasets: [{
+          label: "Input Signal (Time Domain)",
+          data: generateSignal(),
+          borderColor: "blue",
+          fill: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+          },
+        },
+      },
+    });
+
+    // Create FFT Output Chart
+    const fftOutputChart = new Chart(document.getElementById("fftOutputChart"), {
+      type: "bar",
+      data: {
+        labels: Array.from({ length: N }, (_, i) => i),
+        datasets: [{
+          label: "FFT Output (Frequency Domain Magnitude)",
+          data: [],
+          backgroundColor: "orange",
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+          },
+        },
+      },
+    });
+
+    // Update charts on slider input
+    document.getElementById("amplitude").addEventListener("input", (event) => {
+      amplitude = parseFloat(event.target.value);
+      document.getElementById("amplitudeValue").textContent = amplitude.toFixed(1);
+      updateCharts();
+    });
+
+    document.getElementById("frequency").addEventListener("input", (event) => {
+      frequency = parseInt(event.target.value);
+      document.getElementById("frequencyValue").textContent = frequency;
+      updateCharts();
+    });
+
+    // Initialize FFT output chart with initial values
+    updateCharts();
+  </script>
+</body>
+</html>
