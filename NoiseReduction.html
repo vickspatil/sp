@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signal Noise Reduction Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+  <style>
+  body {
+  font-family: 'Poppins', sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 2rem;
+  min-height: 100vh;
+  color: #333;
+  display: grid;
+  place-items: center;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin: 0 0 2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #333;
+  text-align: center;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  justify-items: center;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+canvas:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.controls {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  margin: 2rem auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.controls input[type="file"] {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+
+.controls input[type="file"]:hover {
+  background: #f1f1f1;
+}
+
+.btn {
+  width: 100%;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border: none;
+  border-radius: 4px;
+  background: #007BFF;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.btn:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+p {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+  text-align: center;
+  color: #666;
+  font-weight: 400;
+}
+
+</style>  
+</head>
+<body>
+  <h1>Signal Noise Reduction Demo</h1>
+
+  <div class="container">
+    <!-- Canvas for original image, noisy image, and filtered images -->
+    <div>
+      <canvas id="originalCanvas" width="500" height="500"></canvas>
+      <p>Original Image</p>
+    </div>
+    <div>
+      <canvas id="noisyCanvas" width="500" height="500"></canvas>
+      <p>Noisy Image</p>
+    </div>
+    <div>
+      <canvas id="filteredCanvas" width="500" height="500"></canvas>
+      <p>Filtered Image</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="file" id="imageInput" />
+    <button class="btn" onclick="applyGaussianNoise()">Add Gaussian Noise</button>
+    <button class="btn" onclick="applySaltAndPepperNoise()">Add Salt & Pepper Noise</button>
+    <button class="btn" onclick="applyMedianFilter()">Apply Median Filter</button>
+    <button class="btn" onclick="applyAverageFilter()">Apply Average Filter</button>
+    <button class="btn" onclick="applyBilateralFilter()">Apply Bilateral Filter</button>
+    <button class="btn" onclick="applyWienerFilter()">Apply Wiener Filter</button>
+  </div>
+
+  <script>
+    const originalCanvas = document.getElementById('originalCanvas');
+    const noisyCanvas = document.getElementById('noisyCanvas');
+    const filteredCanvas = document.getElementById('filteredCanvas');
+    const originalCtx = originalCanvas.getContext('2d');
+    const noisyCtx = noisyCanvas.getContext('2d');
+    const filteredCtx = filteredCanvas.getContext('2d');
+    const imageInput = document.getElementById('imageInput');
+
+    let img = new Image();
+    let imageData, noisyData;
+
+    // Load the image
+    imageInput.addEventListener('change', loadImage);
+
+    function loadImage(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          img.onload = function() {
+            originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
+            originalCtx.drawImage(img, 0, 0, originalCanvas.width, originalCanvas.height);
+            imageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+          }
+          img.src = event.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Add Gaussian noise
+    function applyGaussianNoise() {
+      noisyCtx.clearRect(0, 0, noisyCanvas.width, noisyCanvas.height);
+      noisyCtx.drawImage(img, 0, 0, noisyCanvas.width, noisyCanvas.height);
+      noisyData = noisyCtx.getImageData(0, 0, noisyCanvas.width, noisyCanvas.height);
+
+      for (let i = 0; i < noisyData.data.length; i += 4) {
+        // Gaussian noise model
+        let noise = (Math.random() * 80) - 20;
+        noisyData.data[i] += noise;     // Red channel
+        noisyData.data[i + 1] += noise; // Green channel
+        noisyData.data[i + 2] += noise; // Blue channel
+      }
+      noisyCtx.putImageData(noisyData, 0, 0);
+    }
+
+    // Add Salt and Pepper noise
+    function applySaltAndPepperNoise() {
+      noisyCtx.clearRect(0, 0, noisyCanvas.width, noisyCanvas.height);
+      noisyCtx.drawImage(img, 0, 0, noisyCanvas.width, noisyCanvas.height);
+      noisyData = noisyCtx.getImageData(0, 0, noisyCanvas.width, noisyCanvas.height);
+
+      const noiseRatio = 0.1; // 10% of pixels will be affected
+
+      for (let i = 0; i < noisyData.data.length; i += 4) {
+        if (Math.random() < noiseRatio) {
+          // 50% chance for salt (white) or pepper (black)
+          const value = Math.random() < 0.5 ? 0 : 255;
+          noisyData.data[i] = value;     // Red channel
+          noisyData.data[i + 1] = value; // Green channel
+          noisyData.data[i + 2] = value; // Blue channel
+        }
+      }
+      noisyCtx.putImageData(noisyData, 0, 0);
+    }
+
+    // Apply Median filter
+    function applyMedianFilter() {
+      if (!noisyData) return;
+      let filtered = new ImageData(noisyData.width, noisyData.height);
+      
+      for (let y = 1; y < noisyData.height - 1; y++) {
+        for (let x = 1; x < noisyData.width - 1; x++) {
+          let index = (y * noisyData.width + x) * 4;
+          let neighbors = getNeighbors(x, y);
+
+          // Median filter
+          let sortedRed = neighbors.map(p => noisyData.data[p * 4]).sort();
+          let sortedGreen = neighbors.map(p => noisyData.data[p * 4 + 1]).sort();
+          let sortedBlue = neighbors.map(p => noisyData.data[p * 4 + 2]).sort();
+
+          filtered.data[index] = sortedRed[4];     // Red
+          filtered.data[index + 1] = sortedGreen[4]; // Green
+          filtered.data[index + 2] = sortedBlue[4]; // Blue
+          filtered.data[index + 3] = 255;           // Alpha
+        }
+      }
+
+      filteredCtx.putImageData(filtered, 0, 0);
+    }
+
+    // Apply Average filter
+    function applyAverageFilter() {
+      if (!noisyData) return;
+      let filtered = new ImageData(noisyData.width, noisyData.height);
+
+      for (let y = 1; y < noisyData.height - 1; y++) {
+        for (let x = 1; x < noisyData.width - 1; x++) {
+          let index = (y * noisyData.width + x) * 4;
+          let neighbors = getNeighbors(x, y);
+
+          // Average filter
+          let avgRed = neighbors.reduce((sum, p) => sum + noisyData.data[p * 4], 0) / neighbors.length;
+          let avgGreen = neighbors.reduce((sum, p) => sum + noisyData.data[p * 4 + 1], 0) / neighbors.length;
+          let avgBlue = neighbors.reduce((sum, p) => sum + noisyData.data[p * 4 + 2], 0) / neighbors.length;
+
+          filtered.data[index] = avgRed;     // Red
+          filtered.data[index + 1] = avgGreen; // Green
+          filtered.data[index + 2] = avgBlue; // Blue
+          filtered.data[index + 3] = 255;     // Alpha
+        }
+      }
+
+      filteredCtx.putImageData(filtered, 0, 0);
+    }
+
+    // Apply Bilateral filter
+    function applyBilateralFilter() {
+      if (!noisyData) return;
+      let filtered = new ImageData(noisyData.width, noisyData.height);
+      let diameter = 5;  // Diameter of the pixel neighborhood
+      let sigmaColor = 75; // Filter color range
+      let sigmaSpace = 75; // Spatial range
+
+      for (let y = 0; y < noisyData.height; y++) {
+        for (let x = 0; x < noisyData.width; x++) {
+          let index = (y * noisyData.width + x) * 4;
+          let neighbors = getBilateralNeighbors(x, y, diameter);
+
+          let sumR = 0, sumG = 0, sumB = 0, sumW = 0;
+          neighbors.forEach(p => {
+            let colorDistance = Math.sqrt(Math.pow(noisyData.data[p * 4] - noisyData.data[index], 2) +
+                                          Math.pow(noisyData.data[p * 4 + 1] - noisyData.data[index + 1], 2) +
+                                          Math.pow(noisyData.data[p * 4 + 2] - noisyData.data[index + 2], 2));
+            let spatialDistance = Math.sqrt(Math.pow(x - (p % noisyData.width), 2) + Math.pow(y - Math.floor(p / noisyData.width), 2));
+            let weight = Math.exp(-(colorDistance / (2 * sigmaColor * sigmaColor)) - (spatialDistance / (2 * sigmaSpace * sigmaSpace)));
+
+            sumR += weight * noisyData.data[p * 4];
+            sumG += weight * noisyData.data[p * 4 + 1];
+            sumB += weight * noisyData.data[p * 4 + 2];
+            sumW += weight;
+          });
+
+          filtered.data[index] = sumR / sumW;
+          filtered.data[index + 1] = sumG / sumW;
+          filtered.data[index + 2] = sumB / sumW;
+          filtered.data[index + 3] = 255;
+        }
+      }
+
+      filteredCtx.putImageData(filtered, 0, 0);
+    }
+
+    // Get pixel neighbors for median and average filters
+    function getNeighbors(x, y) {
+      let neighbors = [];
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (x + dx >= 0 && x + dx < noisyData.width && y + dy >= 0 && y + dy < noisyData.height) {
+            neighbors.push((y + dy) * noisyData.width + (x + dx));
+          }
+        }
+      }
+      return neighbors;
+    }
+
+    // Get bilateral neighbors
+    function getBilateralNeighbors(x, y, diameter) {
+      let neighbors = [];
+      let radius = Math.floor(diameter / 2);
+
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          if (x + dx >= 0 && x + dx < noisyData.width && y + dy >= 0 && y + dy < noisyData.height) {
+            neighbors.push((y + dy) * noisyData.width + (x + dx));
+          }
+        }
+      }
+      return neighbors;
+    }
+
+    // Apply Wiener filter (placeholder function)
+    function applyWienerFilter() {
+      alert("Wiener Filter is not yet implemented.");
+    }
+  </script>
+</body>
+</html>
