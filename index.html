@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tech Labs - Interactive Simulations</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: #fff;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      background: #282c34;
+      border-bottom: 2px solid #4caf50;
+    }
+    header h1 {
+      font-size: 2.5em;
+      margin: 0;
+      color: #4caf50;
+    }
+    header p {
+      margin: 5px 0;
+      font-size: 1.2em;
+    }
+    .container {
+      padding: 30px;
+      text-align: center;
+    }
+    .project-card {
+      background: #333;
+      margin: 15px auto;
+      padding: 20px;
+      max-width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    }
+    .project-card h2 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+    .project-card p {
+      font-size: 1em;
+      margin: 10px 0;
+    }
+    .project-card a {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+      color: #fff;
+      background: #4caf50;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+    .project-card a:hover {
+      background: #45a049;
+    }
+    footer {
+      margin-top: 50px;
+      padding: 10px 0;
+      text-align: center;
+      background: #282c34;
+      color: #999;
+      font-size: 0.9em;
+    }
+    footer a {
+      color: #4caf50;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Tech Labs</h1>
+    <p>Explore cutting-edge interactive simulations and projects.</p>
+  </header>
+  <div class="container">
+    <!-- FFT Simulation -->
+    <div class="project-card">
+      <h2>Cooley-Tukey FFT Simulation</h2>
+      <p>Visualize real-time transformations between time and frequency domains with adjustable parameters.</p>
+      <a href="CTFFT.html" target="_blank">Launch Simulation</a>
+    </div>
+    <!-- Add More Projects Below -->
+    <div class="project-card">
+      <h2>Signal Noise Reduction Demo</h2>
+      <p>Understand and experiment with various noise reduction techniques using image and signal processing.</p>
+      <a href="NoiseReduction.html" target="_blank">Launch Demo</a>
+    </div>
+    <div class="project-card">
+      <h2>Deep Learning Image Classifier</h2>
+      <p>Test a pre-trained neural network on real-world images to see classification in action.</p>
+      <a href="ImageClassifier.html" target="_blank">Launch Classifier</a>
+    </div>
+  </div>
+  <footer>
+    <p>&copy; 2024 Tech Labs | <a href="https://github.com/your-profile" target="_blank">GitHub</a> | <a href="https://linkedin.com/in/your-profile" target="_blank">LinkedIn</a></p>
+  </footer>
+</body>
+</html>
