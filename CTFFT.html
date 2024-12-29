@@ -98,6 +98,17 @@
       padding: 20px;
     }
 
+    #frequencyWarning {
+      margin-top: 20px;
+      padding: 15px;
+      background: #ffcc00;
+      color: #000;
+      border-radius: 8px;
+      display: none;
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
     @media (max-width: 768px) {
       h1 {
         font-size: 2.2rem;
@@ -133,6 +144,8 @@
     <input id="frequency" type="range" min="1" max="100" step="1" value="1">
     <span id="frequencyValue">1</span>
   </div>
+
+  <div id="frequencyWarning">Note: The Fourier Transform exhibits unusual behavior at frequencies that are multiples of 32. This is because the FFT algorithm works optimally when the input size is a power of 2, and multiples of 32 might lead to artifacts or aliasing due to the signal's periodicity.</div>
 
   <div class="graphs-container">
     <canvas id="inputSignalChart"></canvas>
@@ -197,6 +210,14 @@
       // Update FFT Output Chart
       fftOutputChart.data.datasets[0].data = magnitude;
       fftOutputChart.update();
+
+      // Show warning if frequency is a multiple of 32
+      const frequencyWarning = document.getElementById("frequencyWarning");
+      if (frequency % 32 === 0) {
+        frequencyWarning.style.display = "block";
+      } else {
+        frequencyWarning.style.display = "none";
+      }
     }
 
     // Create Input Signal Chart
