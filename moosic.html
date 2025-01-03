@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Visualizer with FFT</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #34495e;
+            margin: 20px 0;
+        }
+
+        .upload-container {
+            margin: 30px auto;
+            padding: 20px;
+            max-width: 700px;
+            background-color: #ffffff;
+            border: 1px solid #dfe4ea;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .graphs-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        canvas {
+            flex: 1;
+            min-width: 400px;
+            max-width: 600px;
+            height: 400px;
+            background-color: #ffffff;
+            border: 1px solid #dfe4ea;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .upload-btn {
+            background-color: #2980b9;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .upload-btn:hover {
+            background-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <h1>Audio Visualizer with FFT</h1>
+    
+    <div class="upload-container">
+        <input type="file" id="fileInput" accept="audio/*">
+        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+            Choose Audio File
+        </button>
+        <audio id="audioElement" controls style="margin-top: 20px; width: 100%;"></audio>
+    </div>
+
+    <div class="graphs-container">
+        <canvas id="waveformChart"></canvas>
+        <canvas id="fftChart"></canvas>
+    </div>
+
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        
+        const bufferLength = analyser.frequencyBinCount;
+        const timeData = new Uint8Array(bufferLength);
+        const frequencyData = new Uint8Array(bufferLength);
+        let isPlaying = false;
+
+        // Create Waveform Chart
+        const waveformChart = new Chart(document.getElementById('waveformChart'), {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: bufferLength }, (_, i) => i),
+                datasets: [{
+                    label: 'Waveform',
+                    data: Array(bufferLength).fill(128),
+                    borderColor: '#3498db',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 255
+                    }
+                }
+            }
+        });
+
+        // Create FFT Chart
+        const fftChart = new Chart(document.getElementById('fftChart'), {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: bufferLength }, (_, i) => i),
+                datasets: [{
+                    label: 'Frequency Spectrum',
+                    data: Array(bufferLength).fill(0),
+                    borderColor: '#e67e22',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 255
+                    }
+                }
+            }
+        });
+
+        function updateCharts() {
+            if (!isPlaying) return;
+
+            analyser.getByteTimeDomainData(timeData);
+            analyser.getByteFrequencyData(frequencyData);
+
+            waveformChart.data.datasets[0].data = Array.from(timeData);
+            fftChart.data.datasets[0].data = Array.from(frequencyData);
+
+            waveformChart.update();
+            fftChart.update();
+
+            requestAnimationFrame(updateCharts);
+        }
+
+        const audioElement = document.getElementById('audioElement');
+        audioElement.addEventListener('play', () => {
+            isPlaying = true;
+            updateCharts();
+        });
+
+        audioElement.addEventListener('pause', () => {
+            isPlaying = false;
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const audio = document.getElementById('audioElement');
+            const source = audioContext.createMediaElementSource(audio);
+            
+            audio.src = URL.createObjectURL(file);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            audio.play();
+        });
+
+        // Resume AudioContext on user interaction
+        document.addEventListener('click', function() {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        });
+    </script>
+</body>
+</html>
